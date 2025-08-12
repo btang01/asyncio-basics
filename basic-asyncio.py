@@ -115,6 +115,21 @@ async def demo_semaphore():
     sempahore = asyncio.Semaphore(2) #allow 2 concurrent accesses
     await asyncio.gather(*(access_resource(semaphore, i) for i in range(5)))
 
+# demonstrate waiter
+async def waiter(event):
+    print("waiting for event to be set")
+    await event.wait()
+    print("event has been set, continuing execution")
+
+async def setter(event):
+    await asyncio.sleep(2) # simulate doing work
+    event.set()
+    print("event has been set!")
+
+async def wait_set():
+    event = asyncio.Event()
+    await asyncio.gather(waiter(event), setter(event))
+
 if __name__=="__main__":
     asyncio.run(main_basic_nonconcurrent())
     asyncio.run(main_basic_concurrent())
@@ -123,3 +138,4 @@ if __name__=="__main__":
     asyncio.run(future_func())
     asyncio.run(main_mod_shared_resource())
     asyncio.run(demo_semaphore())
+    asyncio.run(wait_set())
