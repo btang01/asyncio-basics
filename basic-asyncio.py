@@ -66,8 +66,48 @@ async def main_task_group_concurrent() -> object:
 
     print("end of main task group concurrent coroutine")
 
+async def set_future_result(future, value):
+    await asyncio.sleep(2)
+    future.set_result(value)
+    print(f"set future's result to: {value}")
+
+# result will come in future, don't know when it will come
+async def future_func():
+    # probably will never do this in real life
+    loop = asyncio.get_running_loop()
+    # set this and await it - may or may not complete, waiting for it to be available, not waiting for a whole coroutine or task to finish
+    future = loop.create_future()
+
+    asyncio.create_task(set_future_result(future, "future result is ready"))
+
+    # wait for future result, not the entire task (it might not complete)
+    result = await future
+    print(f"received future's result: {result}")
+
+"""Synchronization"""
+#shared variable - if 2 coroutines handling same data, weird errors, so lock it
+shared_resource = 0
+
+# an asyncio lock
+lock = asyncio.Lock()
+
+async def modify_shared_resource():
+    global shared_resource
+    async with lock:
+        # check if coroutine is using the lock, wait for it to finish, or start:
+        print(f"resource before mod: {shared_resource}")
+        shared_resource += 1
+        await asyncio.sleep(1) # simulate IO operation
+        print(f"resource after mod: {shared_resource}")
+
+async def main_mod_shared_resource():
+    #* unpakcs into separate arguments
+    await asyncio.gather(*(modify_shared_resource() for _ in range (5)))
+
 if __name__=="__main__":
     asyncio.run(main_basic_nonconcurrent())
     asyncio.run(main_basic_concurrent())
     asyncio.run(main_gather_concurrent())
     asyncio.run(main_task_group_concurrent())
+    asyncio.run(future_func())
+    asyncio.run(main_mod_shared_resource())
