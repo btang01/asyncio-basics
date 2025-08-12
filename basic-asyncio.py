@@ -112,7 +112,7 @@ async def access_resource(semaphore, resource_id):
         print(f"releasing resource {resource_id}")
 
 async def demo_semaphore():
-    sempahore = asyncio.Semaphore(2) #allow 2 concurrent accesses
+    semaphore = asyncio.Semaphore(2) #allow 2 concurrent accesses
     await asyncio.gather(*(access_resource(semaphore, i) for i in range(5)))
 
 # demonstrate waiter
