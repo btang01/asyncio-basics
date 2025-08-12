@@ -104,6 +104,17 @@ async def main_mod_shared_resource():
     #* unpakcs into separate arguments
     await asyncio.gather(*(modify_shared_resource() for _ in range (5)))
 
+# semaphore is like a lock but multiple coroutines access same resource at same time
+async def access_resource(semaphore, resource_id):
+    async with semaphore:
+        print(f"accessing resource {resource_id}")
+        await asyncio.sleep(2)
+        print(f"releasing resource {resource_id}")
+
+async def demo_semaphore():
+    sempahore = asyncio.Semaphore(2) #allow 2 concurrent accesses
+    await asyncio.gather(*(access_resource(semaphore, i) for i in range(5)))
+
 if __name__=="__main__":
     asyncio.run(main_basic_nonconcurrent())
     asyncio.run(main_basic_concurrent())
@@ -111,3 +122,4 @@ if __name__=="__main__":
     asyncio.run(main_task_group_concurrent())
     asyncio.run(future_func())
     asyncio.run(main_mod_shared_resource())
+    asyncio.run(demo_semaphore())
